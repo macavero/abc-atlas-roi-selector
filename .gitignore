@@ -1,0 +1,29 @@
+# ABC Atlas downloaded/cache data
+data/abc_atlas/
+
+# ABC Reference notebooks
+notebooks/reference
+
+# Python cache
+__pycache__/
+*.py[cod]
+
+# Package build/install metadata
+*.egg-info/
+build/
+dist/
+
+# Jupyter temporary files
+.ipynb_checkpoints/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Windows
+desktop.ini
+Thumbs.db
+
+# macOS
+.DS_Store
