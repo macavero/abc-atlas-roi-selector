@@ -50,5 +50,25 @@
             76
         ],
         "voxel_count": 175917
+    },
+    "new_example_mask": {
+        "file": "data/custom_masks/new_example_mask.npz",
+        "mask_key": "mask",
+        "base_region": "TH",
+        "atlas": "Allen-CCF-2020",
+        "resolution_um": 25,
+        "axis": 2,
+        "plate_step_slices": 4,
+        "slice_indices": [
+            268,
+            272,
+            276
+        ],
+        "atlas_plates": [
+            68,
+            69,
+            70
+        ],
+        "voxel_count": 7593
     }
 }
