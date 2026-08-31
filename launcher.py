@@ -11,37 +11,99 @@ NOTEBOOKS_DIR = REPO_ROOT / "notebooks"
 running_processes = []
 
 
+# --------------------------------------------------
+# Run Voilà internally
+# --------------------------------------------------
+
+def run_voila(notebook_path):
+    """
+    Run Voilà instead of opening the launcher GUI.
+    """
+
+    from voila.app import Voila
+
+    sys.argv = [
+        "voila",
+        str(notebook_path),
+    ]
+
+    Voila.launch_instance()
+
+
+# --------------------------------------------------
+# Launch notebook
+# --------------------------------------------------
+
 def launch_notebook(notebook_name):
+
     notebook_path = NOTEBOOKS_DIR / notebook_name
 
-    process = subprocess.Popen(
-        [
+    # Running from PyInstaller executable
+    if getattr(sys, "frozen", False):
+
+        command = [
             sys.executable,
-            "-m",
-            "voila",
+            "--voila",
             str(notebook_path),
-        ],
+        ]
+
+    # Running normally with Python
+    else:
+
+        command = [
+            sys.executable,
+            str(Path(__file__).resolve()),
+            "--voila",
+            str(notebook_path),
+        ]
+
+    process = subprocess.Popen(
+        command,
         cwd=REPO_ROOT,
     )
 
-    running_processes.append(process)
+    running_processes.append(
+        process
+    )
 
 
 def open_roi_selector():
+
     launch_notebook(
         "multiple-roi-selector.ipynb"
     )
 
 
 def open_region_editor():
+
     launch_notebook(
         "custom-region-editor.ipynb"
     )
 
 
-# -----------------------------
-# Main window
-# -----------------------------
+# --------------------------------------------------
+# Check for Voilà mode FIRST
+# --------------------------------------------------
+
+if (
+    len(sys.argv) >= 3
+    and sys.argv[1] == "--voila"
+):
+
+    notebook_path = Path(
+        sys.argv[2]
+    )
+
+    run_voila(
+        notebook_path
+    )
+
+    sys.exit()
+
+
+# --------------------------------------------------
+# Launcher GUI
+# --------------------------------------------------
 
 root = tk.Tk()
 
@@ -58,10 +120,6 @@ root.resizable(
     False
 )
 
-
-# -----------------------------
-# Title
-# -----------------------------
 
 title = ttk.Label(
     root,
@@ -83,10 +141,6 @@ subtitle.pack(
     pady=(0, 20)
 )
 
-
-# -----------------------------
-# Buttons
-# -----------------------------
 
 roi_button = ttk.Button(
     root,
