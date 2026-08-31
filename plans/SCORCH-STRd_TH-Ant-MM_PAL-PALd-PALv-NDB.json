@@ -1,0 +1,26 @@
+{
+    "version": 1,
+    "rois": [
+        {
+            "name": "STRd",
+            "regions": [
+                "STRd"
+            ],
+            "color": "#fb00ff"
+        },
+        {
+            "name": "TH:Ant-MM",
+            "regions": [
+                "TH-Ant_MM"
+            ],
+            "color": "#fbff00"
+        },
+        {
+            "name": "PAL:PALd-PALv-NDB",
+            "regions": [
+                "PAL:PALd-PALv-NDB"
+            ],
+            "color": "#a600ff"
+        }
+    ]
+}

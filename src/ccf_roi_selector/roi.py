@@ -1,3 +1,7 @@
+import json
+from pathlib import Path
+import numpy as np
+
 def get_roi_indices(parcellation_annotation, acronym):
     """
     Return the parcellation indices associated with an ROI acronym.
@@ -12,3 +16,78 @@ def get_roi_indices(parcellation_annotation, acronym):
         return []
 
     return rows["parcellation_index"].unique()
+
+def load_custom_regions():
+    repo_root = Path(__file__).resolve().parents[2]
+    config_file = repo_root / "config" / "custom_regions.json"
+
+    with open(config_file, "r") as f:
+        return json.load(f)
+    
+def resolve_region_indices(parcellation_annotation, region):
+
+    custom_regions = load_custom_regions()
+
+    regions_to_find = custom_regions.get(region, [region])
+
+    all_indices = []
+
+    for allen_region in regions_to_find:
+        indices = get_roi_indices(
+            parcellation_annotation,
+            allen_region
+        )
+
+        all_indices.extend(indices)
+
+    return np.unique(all_indices)
+
+def load_custom_masks_registry():
+    """
+    Load the registry of manually drawn custom masks.
+    """
+
+    repo_root = Path(__file__).resolve().parents[2]
+
+    registry_file = (
+        repo_root
+        / "config"
+        / "custom_masks.json"
+    )
+
+    if not registry_file.exists():
+        return {}
+
+    with open(registry_file, "r") as f:
+        return json.load(f)
+
+
+def load_custom_mask(region):
+    """
+    Load the 3D boolean mask for a manually drawn custom region.
+
+    Returns None if the region is not a custom mask.
+    """
+
+    registry = load_custom_masks_registry()
+
+    if region not in registry:
+        return None
+
+    repo_root = Path(__file__).resolve().parents[2]
+
+    info = registry[region]
+
+    mask_path = (
+        repo_root
+        / info["file"]
+    )
+
+    mask_key = info.get(
+        "mask_key",
+        "mask"
+    )
+
+    data = np.load(mask_path)
+
+    return data[mask_key].astype(bool)

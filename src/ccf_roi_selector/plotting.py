@@ -2,27 +2,66 @@ import numpy as np
 from matplotlib.colors import to_rgba
 import matplotlib.pyplot as plt
 
-from ccf_roi_selector.roi import get_roi_indices
+from ccf_roi_selector.roi import (
+    resolve_region_indices,
+    load_custom_masks_registry,
+    load_custom_mask,
+)
 
 
-def create_color_overlay(annotation_slice, parcellation_annotation, roi_colors):
+def create_color_overlay(
+    annotation,
+    parcellation_annotation,
+    roi_colors,
+    slice_index
+):
     """
-    Create an RGBA color overlay for a single 2D annotation slice.
+    Create an RGBA overlay for Allen regions,
+    composite regions, and manually drawn masks.
     """
+
+    annotation_slice = get_slice(
+        annotation,
+        slice_index
+    )
 
     rgba = np.zeros(
         annotation_slice.shape + (4,),
         dtype=np.float32
     )
 
-    for acronym, color in roi_colors.items():
+    custom_masks = load_custom_masks_registry()
 
-        indices = get_roi_indices(
-            parcellation_annotation,
-            acronym
-        )
+    for region, color in roi_colors.items():
 
-        mask = np.isin(annotation_slice, indices)
+        # -----------------------------
+        # Manually drawn custom mask
+        # -----------------------------
+        if region in custom_masks:
+
+            mask_3d = load_custom_mask(
+                region
+            )
+
+            mask = get_slice(
+                mask_3d,
+                slice_index
+            ).astype(bool)
+
+        # -----------------------------
+        # Allen / composite region
+        # -----------------------------
+        else:
+
+            indices = resolve_region_indices(
+                parcellation_annotation,
+                region
+            )
+
+            mask = np.isin(
+                annotation_slice,
+                indices
+            )
 
         rgba[mask] = to_rgba(color)
 
@@ -48,19 +87,32 @@ def show_overlay_slice(
     slice_index,
     title=None
 ):
-    template_slice = get_slice(template, slice_index)
-    annotation_slice = get_slice(annotation, slice_index)
 
-    overlay = create_color_overlay(
-        annotation_slice,
-        parcellation_annotation,
-        roi_colors
+    template_slice = get_slice(
+        template,
+        slice_index
     )
 
-    plt.figure(figsize=(8, 7))
+    overlay = create_color_overlay(
+        annotation,
+        parcellation_annotation,
+        roi_colors,
+        slice_index
+    )
 
-    plt.imshow(template_slice, cmap="gray")
-    plt.imshow(overlay, alpha=0.7)
+    plt.figure(
+        figsize=(8, 7)
+    )
+
+    plt.imshow(
+        template_slice,
+        cmap="gray"
+    )
+
+    plt.imshow(
+        overlay,
+        alpha=0.7
+    )
 
     if title is not None:
         plt.title(title)
