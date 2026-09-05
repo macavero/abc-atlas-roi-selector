@@ -1,0 +1,29 @@
+{
+    "version": 1,
+    "rois": [
+        {
+            "name": "Thalamus Anterior and Medial",
+            "regions": [
+                "TH-Ant_MM"
+            ],
+            "color": "#ff00f7"
+        },
+        {
+            "name": "HIP-VISp-MOp",
+            "regions": [
+                "HIP",
+                "VISp",
+                "MOp"
+            ],
+            "color": "#00ff11"
+        },
+        {
+            "name": "PAG-RAmb",
+            "regions": [
+                "PAG",
+                "RAmb"
+            ],
+            "color": "#ffea00"
+        }
+    ]
+}

@@ -1,5 +1,10 @@
 from pathlib import Path
-from PyInstaller.utils.hooks import collect_all
+from PyInstaller.utils.hooks import (
+    collect_all,
+    collect_data_files,
+    copy_metadata,
+    collect_entry_point,
+)
 
 ROOT = Path(SPEC).resolve().parent
 
@@ -34,9 +39,15 @@ binaries = []
 for package in [
     "voila",
     "jupyter_server",
+    "jupyterlab_server",
+    "jupyter_events",
+    "jupyter_client",
+    "ipykernel",
     "nbconvert",
+    "nbformat",
     "ipywidgets",
     "ipympl",
+    "rfc3987_syntax",
 ]:
 
     package_datas, package_binaries, package_hiddenimports = collect_all(
@@ -47,6 +58,34 @@ for package in [
     binaries += package_binaries
     hiddenimports += package_hiddenimports
 
+datas += collect_data_files(
+    "rfc3987_syntax"
+)
+
+datas += collect_data_files(
+    "jupyter_events"
+)
+
+# --------------------------------------------------
+# Jupyter Client distribution metadata / entrypoints
+# --------------------------------------------------
+
+datas += copy_metadata(
+    "jupyter_client"
+)
+
+entrypoint_datas, entrypoint_hiddenimports = collect_entry_point(
+    "jupyter_client.kernel_provisioners"
+)
+
+datas += entrypoint_datas
+hiddenimports += entrypoint_hiddenimports
+
+hiddenimports += [
+    "jupyter_client.provisioning",
+    "jupyter_client.provisioning.local_provisioner",
+    "ipykernel_launcher",
+]
 
 # --------------------------------------------------
 # PyInstaller analysis

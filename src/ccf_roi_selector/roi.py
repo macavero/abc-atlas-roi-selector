@@ -1,6 +1,10 @@
 import json
 from pathlib import Path
 import numpy as np
+from ccf_roi_selector.paths import (
+    get_bundled_root,
+    ensure_custom_mask_storage,
+)
 
 def get_roi_indices(parcellation_annotation, acronym):
     """
@@ -18,8 +22,14 @@ def get_roi_indices(parcellation_annotation, acronym):
     return rows["parcellation_index"].unique()
 
 def load_custom_regions():
-    repo_root = Path(__file__).resolve().parents[2]
-    config_file = repo_root / "config" / "custom_regions.json"
+
+    bundled_root = get_bundled_root()
+
+    config_file = (
+        bundled_root
+        / "config"
+        / "custom_regions.json"
+    )
 
     with open(config_file, "r") as f:
         return json.load(f)
@@ -47,20 +57,21 @@ def load_custom_masks_registry():
     Load the registry of manually drawn custom masks.
     """
 
-    repo_root = Path(__file__).resolve().parents[2]
+    user_root = ensure_custom_mask_storage()
 
     registry_file = (
-        repo_root
+        user_root
         / "config"
         / "custom_masks.json"
     )
 
-    if not registry_file.exists():
-        return {}
+    with open(
+        registry_file,
+        "r",
+        encoding="utf-8"
+    ) as f:
 
-    with open(registry_file, "r") as f:
         return json.load(f)
-
 
 def load_custom_mask(region):
     """
@@ -74,12 +85,12 @@ def load_custom_mask(region):
     if region not in registry:
         return None
 
-    repo_root = Path(__file__).resolve().parents[2]
+    user_root = ensure_custom_mask_storage()
 
     info = registry[region]
 
     mask_path = (
-        repo_root
+        user_root
         / info["file"]
     )
 
