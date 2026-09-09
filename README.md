@@ -11,6 +11,30 @@ It includes two main tools:
 
 ---
 
+## Preview
+
+### Multiple ROI Selector
+
+Build ROIs by selecting one or more anatomical regions, assigning names, and choosing custom display colors.
+
+<img src="assets/roi_selection.png" width="800">
+
+Saved ROI plans can be reused later, allowing frequently used anatomical configurations to be restored without rebuilding them manually.
+
+<img src="assets/load-save-plan.png" width="800">
+
+Multiple ROIs can be displayed simultaneously on the Allen reference atlas. Each ROI can contain one or more anatomical regions and is displayed using its assigned color.
+
+<img src="assets/load-multiple-rois.png" width="800">
+
+### Custom Region Editor
+
+The Custom Region Editor can be used to draw anatomical regions directly on individual atlas plates. Polygon vertices are selected interactively and converted into a custom mask when the polygon is completed.
+
+<img src="assets/custom_roi.png" width="900">
+
+---
+
 ## Features
 
 ### Multiple ROI Selector
@@ -121,6 +145,8 @@ ROI plans can also be **exported and imported**, making it easy to share configu
 
 User-generated plans are stored locally in the `plans/` directory and are not tracked by Git.
 
+Plans can also be removed manually by deleting their corresponding `.json` file from the `plans/` directory.
+
 ---
 
 ## Custom Regions
@@ -139,6 +165,60 @@ Once saved, a custom region becomes available in the Multiple ROI Selector along
 
 This allows standard atlas annotations and manually curated regions to be combined in the same visualization.
 
+Custom masks can also be removed manually, but both the stored mask file and its entry in `config/custom_masks.json` must be deleted.
+
+---
+
+## Manual File Management
+
+Plans and custom masks can also be removed manually if needed.
+
+> **Recommended:** Close ABC Atlas ROI Selector before manually modifying these files.
+
+### Deleting a Saved ROI Plan
+
+Saved ROI plans are stored as `.json` files in:
+
+```text
+plans/
+```
+
+To remove a plan manually:
+
+1. Close the application.
+2. Open the `plans/` directory.
+3. Delete the `.json` file corresponding to the plan you no longer want.
+4. Restart the application.
+
+The deleted plan will no longer appear in the saved-plan list.
+
+### Deleting a Custom Mask
+
+Custom masks are stored in:
+
+```text
+data/custom_masks/
+```
+
+and registered in:
+
+```text
+config/custom_masks.json
+```
+
+To completely remove a custom mask:
+
+1. Close the application.
+2. Delete the corresponding mask file from `data/custom_masks/`.
+3. Open `config/custom_masks.json`.
+4. Remove the entry associated with that mask.
+5. Save the JSON file.
+6. Restart the application.
+
+> **Important:** Both steps are required. Deleting only the mask file may leave an invalid entry in the custom-region registry.
+
+Be careful when editing `custom_masks.json` manually. The file must remain valid JSON or custom regions may fail to load.
+
 ---
 
 ## Project Structure
@@ -147,7 +227,11 @@ This allows standard atlas annotations and manually curated regions to be combin
 abc-atlas-roi-selector/
 │
 ├── assets/
-│   └── ico_selector.ico
+│   ├── ico_selector.ico
+│   ├── roi_selection.png
+│   ├── load-save-plan.png
+│   ├── load-multiple-rois.png
+│   └── custom_roi.png
 │
 ├── config/
 │   ├── custom_masks.json
@@ -181,6 +265,9 @@ abc-atlas-roi-selector/
 ```
 
 ### Main Components
+
+`assets/`  
+Contains application and documentation assets, including the executable icon and README screenshots.
 
 `notebooks/`  
 Contains the interactive interfaces for ROI selection and custom region creation.

@@ -1,4 +1,5 @@
 from pathlib import Path
+import sys
 from PyInstaller.utils.hooks import (
     collect_all,
     collect_data_files,
@@ -7,6 +8,13 @@ from PyInstaller.utils.hooks import (
 )
 
 ROOT = Path(SPEC).resolve().parent
+
+# Make the local project package importable while the spec is being evaluated.
+# collect_all() runs before Analysis(), so Analysis(pathex=...) alone is not
+# enough for packages that live under ./src.
+for project_path in [ROOT, ROOT / "src"]:
+    if project_path.exists():
+        sys.path.insert(0, str(project_path))
 
 # --------------------------------------------------
 # Data files from our project
@@ -46,10 +54,17 @@ for package in [
     "nbconvert",
     "nbformat",
     "ipywidgets",
+    "jupyterlab_widgets",
+    "widgetsnbextension",
+    "comm",
     "ipympl",
     "matplotlib_inline",
     "rfc3987_syntax",
     "debugpy",
+
+    # Local application package. Imports inside notebooks are invisible to
+    # PyInstaller static analysis, so bundle every ccf_roi_selector submodule.
+    "ccf_roi_selector",
 
     # Imported by the notebooks themselves. PyInstaller cannot discover
     # imports that live only inside .ipynb files, so collect them explicitly.
@@ -89,6 +104,10 @@ datas += copy_metadata(
 # so the frozen app recognizes both backends on another computer.
 datas += copy_metadata("matplotlib-inline")
 datas += copy_metadata("ipympl")
+datas += copy_metadata("ipywidgets")
+datas += copy_metadata("jupyterlab_widgets")
+datas += copy_metadata("widgetsnbextension")
+datas += copy_metadata("comm")
 
 entrypoint_datas, entrypoint_hiddenimports = collect_entry_point(
     "jupyter_client.kernel_provisioners"
