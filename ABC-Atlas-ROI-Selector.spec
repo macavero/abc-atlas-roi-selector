@@ -83,6 +83,51 @@ for package in [
     binaries += package_binaries
     hiddenimports += package_hiddenimports
 
+
+# --------------------------------------------------
+# Jupyter frontend assets
+# --------------------------------------------------
+#
+# ipywidgets and ipympl have two sides:
+#   1. Python packages used by the kernel
+#   2. JavaScript assets used by the browser
+#
+# On the development computer, Jupyter can find these files in the local
+# Python installation. On a computer that only has the packaged app, those
+# files must be inside the PyInstaller bundle as share/jupyter/... .
+
+jupyter_share = Path(sys.prefix) / "share" / "jupyter"
+
+frontend_assets = [
+    # ipywidgets frontend
+    "labextensions/@jupyter-widgets/jupyterlab-manager",
+    "nbextensions/jupyter-js-widgets",
+
+    # ipympl / matplotlib widget frontend
+    "labextensions/jupyter-matplotlib",
+    "nbextensions/jupyter-matplotlib",
+
+    # Voilà shared templates/static configuration, when installed here
+    "voila",
+]
+
+for relative_path in frontend_assets:
+    source = jupyter_share / relative_path
+
+    if source.exists():
+        datas.append(
+            (
+                str(source),
+                f"share/jupyter/{relative_path}",
+            )
+        )
+        print(f"Including Jupyter frontend asset: {source}")
+    else:
+        print(f"Jupyter frontend asset not found: {source}")
+
+
+# Additional package data that has caused dynamic-loading issues in frozen
+# Jupyter applications.
 datas += collect_data_files(
     "rfc3987_syntax"
 )
@@ -90,6 +135,7 @@ datas += collect_data_files(
 datas += collect_data_files(
     "jupyter_events"
 )
+
 
 # --------------------------------------------------
 # Jupyter Client distribution metadata / entrypoints
@@ -122,6 +168,7 @@ hiddenimports += [
     "ipykernel_launcher",
     "ipykernel.kernelapp",
 ]
+
 
 # --------------------------------------------------
 # PyInstaller analysis
@@ -170,6 +217,9 @@ exe = EXE(
     strip=False,
     upx=True,
 
+    # Keep the console visible while testing portability so that Voilà/Jupyter
+    # errors are visible. Change this to False only after the portable build
+    # is confirmed to work on a clean computer.
     console=True,
 
     icon=str(
