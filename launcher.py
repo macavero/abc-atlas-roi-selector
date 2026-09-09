@@ -1,6 +1,9 @@
 from pathlib import Path
 import subprocess
 import sys
+import os
+import json
+import tempfile
 import tkinter as tk
 from tkinter import (
     ttk,
@@ -26,12 +29,58 @@ running_processes = []
 # Run Voilà internally
 # --------------------------------------------------
 
+def _install_portable_kernel_spec():
+    """Create a temporary kernelspec that launches the bundled executable."""
+
+    kernel_root = Path(
+        tempfile.mkdtemp(prefix="abc_roi_kernel_")
+    )
+
+    kernel_dir = kernel_root / "kernels" / "python3"
+    kernel_dir.mkdir(parents=True, exist_ok=True)
+
+    kernel_spec = {
+        "argv": [
+            sys.executable,
+            "--ipykernel",
+            "-f",
+            "{connection_file}",
+        ],
+        "display_name": "ABC Atlas ROI Selector",
+        "language": "python",
+    }
+
+    (kernel_dir / "kernel.json").write_text(
+        json.dumps(kernel_spec, indent=2),
+        encoding="utf-8",
+    )
+
+    # Jupyter searches JUPYTER_PATH before its normal kernel locations.
+    existing = os.environ.get("JUPYTER_PATH")
+    os.environ["JUPYTER_PATH"] = (
+        str(kernel_root)
+        if not existing
+        else str(kernel_root) + os.pathsep + existing
+    )
+
+
+def run_ipykernel():
+    """Run an IPython kernel inside the PyInstaller executable."""
+
+    from ipykernel.kernelapp import IPKernelApp
+
+    # Keep the standard ipykernel arguments after our private flag.
+    sys.argv = ["ipykernel_launcher"] + sys.argv[2:]
+    IPKernelApp.launch_instance()
+
+
 def run_voila(notebook_path):
-    """
-    Run Voilà instead of opening the launcher GUI.
-    """
+    """Run Voilà using a portable kernel bundled with the executable."""
 
     from voila.app import Voila
+
+    if getattr(sys, "frozen", False):
+        _install_portable_kernel_spec()
 
     sys.argv = [
         "voila",
@@ -93,8 +142,16 @@ def open_region_editor():
 
 
 # --------------------------------------------------
-# Check for Voilà mode FIRST
+# Check special modes BEFORE opening the GUI
 # --------------------------------------------------
+
+if (
+    len(sys.argv) >= 2
+    and sys.argv[1] == "--ipykernel"
+):
+    run_ipykernel()
+    sys.exit()
+
 
 if (
     len(sys.argv) >= 3

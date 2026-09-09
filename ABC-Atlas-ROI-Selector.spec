@@ -47,7 +47,17 @@ for package in [
     "nbformat",
     "ipywidgets",
     "ipympl",
+    "matplotlib_inline",
     "rfc3987_syntax",
+    "debugpy",
+
+    # Imported by the notebooks themselves. PyInstaller cannot discover
+    # imports that live only inside .ipynb files, so collect them explicitly.
+    "numpy",
+    "pandas",
+    "matplotlib",
+    "SimpleITK",
+    "abc_atlas_access",
 ]:
 
     package_datas, package_binaries, package_hiddenimports = collect_all(
@@ -74,6 +84,12 @@ datas += copy_metadata(
     "jupyter_client"
 )
 
+# Matplotlib discovers the Jupyter inline/widget backends through
+# distribution entry-point metadata. Include that metadata explicitly
+# so the frozen app recognizes both backends on another computer.
+datas += copy_metadata("matplotlib-inline")
+datas += copy_metadata("ipympl")
+
 entrypoint_datas, entrypoint_hiddenimports = collect_entry_point(
     "jupyter_client.kernel_provisioners"
 )
@@ -85,6 +101,7 @@ hiddenimports += [
     "jupyter_client.provisioning",
     "jupyter_client.provisioning.local_provisioner",
     "ipykernel_launcher",
+    "ipykernel.kernelapp",
 ]
 
 # --------------------------------------------------
