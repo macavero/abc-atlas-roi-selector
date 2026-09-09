@@ -141,3 +141,49 @@ def ensure_custom_mask_storage():
                 )
 
     return user_root
+
+def ensure_plan_storage():
+    """
+    Create writable storage for ROI plans.
+
+    Plans bundled with the application are copied
+    to the user's data folder the first time.
+    """
+
+    bundled_root = get_bundled_root()
+    user_root = get_user_data_root()
+
+    user_plans_dir = (
+        user_root
+        / "plans"
+    )
+
+    user_plans_dir.mkdir(
+        parents=True,
+        exist_ok=True
+    )
+
+    # Plans that came with the program/repository
+    bundled_plans_dir = (
+        bundled_root
+        / "plans"
+    )
+
+    if bundled_plans_dir.exists():
+
+        for source in bundled_plans_dir.glob("*.json"):
+
+            destination = (
+                user_plans_dir
+                / source.name
+            )
+
+            # Never overwrite a user's version
+            if not destination.exists():
+
+                shutil.copy2(
+                    source,
+                    destination
+                )
+
+    return user_plans_dir

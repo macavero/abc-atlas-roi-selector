@@ -2,8 +2,19 @@ from pathlib import Path
 import subprocess
 import sys
 import tkinter as tk
-from tkinter import ttk
+from tkinter import (
+    ttk,
+    filedialog,
+    messagebox,
+)
 
+import webbrowser
+from datetime import datetime
+
+from ccf_roi_selector.sharing import (
+    export_user_data,
+    import_user_data,
+)
 
 REPO_ROOT = Path(__file__).resolve().parent
 NOTEBOOKS_DIR = REPO_ROOT / "notebooks"
@@ -104,6 +115,79 @@ if (
 # --------------------------------------------------
 # Launcher GUI
 # --------------------------------------------------
+def export_data():
+
+    filename = (
+        "ABC-Atlas-ROI-Data_"
+        + datetime.now().strftime("%Y-%m-%d")
+        + ".zip"
+    )
+
+    destination = filedialog.asksaveasfilename(
+        title="Export ROI data",
+        initialfile=filename,
+        defaultextension=".zip",
+        filetypes=[
+            ("ZIP files", "*.zip")
+        ],
+    )
+
+    if not destination:
+        return
+
+    try:
+
+        export_user_data(
+            destination
+        )
+
+        messagebox.showinfo(
+            "Export complete",
+            "Masks and ROI plans were exported successfully."
+        )
+
+    except Exception as error:
+
+        messagebox.showerror(
+            "Export failed",
+            str(error)
+        )
+
+
+def import_data():
+
+    source = filedialog.askopenfilename(
+        title="Import ROI data",
+        filetypes=[
+            ("ABC Atlas ROI data", "*.zip")
+        ],
+    )
+
+    if not source:
+        return
+
+    try:
+
+        imported, skipped = import_user_data(
+            source
+        )
+
+        messagebox.showinfo(
+            "Import complete",
+            (
+                f"Imported: {imported}\n"
+                f"Already existed: {skipped}\n\n"
+                "Reopen the ROI Selector to refresh."
+            )
+        )
+
+    except Exception as error:
+
+        messagebox.showerror(
+            "Import failed",
+            str(error)
+        )
+
 
 root = tk.Tk()
 
@@ -112,7 +196,7 @@ root.title(
 )
 
 root.geometry(
-    "420x250"
+    "420x380"
 )
 
 root.resizable(
@@ -165,5 +249,59 @@ editor_button.pack(
     pady=8
 )
 
+separator = ttk.Separator(
+    root,
+    orient="horizontal"
+)
+
+separator.pack(
+    fill="x",
+    padx=60,
+    pady=(15, 10)
+)
+
+
+export_button = ttk.Button(
+    root,
+    text="Export My Data",
+    command=export_data,
+    width=30,
+)
+
+export_button.pack(
+    pady=5
+)
+
+
+import_button = ttk.Button(
+    root,
+    text="Import Data",
+    command=import_data,
+    width=30,
+)
+
+import_button.pack(
+    pady=5
+)
+
+# Watermark
+footer = ttk.Label(
+    root,
+    text="Created by Camila Vergara • GitHub: macavero",
+    font=("Segoe UI", 8),
+    cursor="hand2",
+)
+
+footer.pack(
+    side="bottom",
+    pady=(10, 8)
+)
+
+footer.bind(
+    "<Button-1>",
+    lambda event: webbrowser.open(
+        "https://github.com/macavero"
+    )
+)
 
 root.mainloop()

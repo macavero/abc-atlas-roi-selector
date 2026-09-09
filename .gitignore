@@ -1,8 +1,8 @@
 # ABC Atlas downloaded/cache data
 data/abc_atlas/
 
-# ABC Reference notebooks
-notebooks/reference
+# ABC reference notebooks
+notebooks/reference/
 
 # Python cache
 __pycache__/
@@ -10,6 +10,8 @@ __pycache__/
 
 # Package build/install metadata
 *.egg-info/
+
+# PyInstaller
 build/
 dist/
 
